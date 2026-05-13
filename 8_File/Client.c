@@ -1,18 +1,28 @@
-#include <arpa/inet.h>
-#include <netinet/in.h>
+// gcc Client.c -lws2_32 -o client.exe
+// ./client.exe
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <unistd.h>
 
-#define IP_PROTOCOL 0
+#ifdef _WIN32
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#pragma comment(lib, "ws2_32.lib")
+typedef int socklen_t;
+#define CLOSESOCKET closesocket
+#else
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <unistd.h>
+#define CLOSESOCKET close
+#endif
+
 #define PORT_NO 15050
 #define NET_BUF_SIZE 32
 #define cipherKey 'S'
 #define sendrecvflag 0
-#define nofile "File Not Found!"
 
 void clearBuf(char *b) {
     for (int i = 0; i < NET_BUF_SIZE; i++)
@@ -23,83 +33,78 @@ char Cipher(char ch) {
     return ch ^ cipherKey;
 }
 
-int sendFile(FILE *fp, char *buf, int s) {
-    if (fp == NULL) {
-        strcpy(buf, nofile);
-        int len = strlen(nofile);
-        buf[len] = EOF;
-        for (int i = 0; i <= len; i++)
-            buf[i] = Cipher(buf[i]);
-        return 1;
-    }
-
-    for (int i = 0; i < s; i++) {
-        char ch = fgetc(fp);
-        buf[i] = Cipher(ch);
-
-        if (ch == EOF)
-            return 1;
-    }
-    return 0;
-}
-
 int main() {
-    int sockfd, nBytes;
-    struct sockaddr_in addr_con;
-    int addrlen = sizeof(addr_con);
+#ifdef _WIN32
+    WSADATA wsa;
+    if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0) {
+        printf("\nWSAStartup failed!\n");
+        return 0;
+    }
+#endif
 
-    addr_con.sin_family = AF_INET;
-    addr_con.sin_port = htons(PORT_NO);
-    addr_con.sin_addr.s_addr = INADDR_ANY;
+#ifdef _WIN32
+    SOCKET sockfd;
+#else
+    int sockfd;
+#endif
+    int nBytes;
+    struct sockaddr_in server_addr;
+    socklen_t addrlen = sizeof(server_addr);
 
     char net_buf[NET_BUF_SIZE];
     FILE *fp;
 
-    sockfd = socket(AF_INET, SOCK_DGRAM, IP_PROTOCOL);
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
 
-    if (sockfd < 0)
-        printf("\nFile descriptor not received!\n");
-    else
-        printf("\nFile descriptor %d received\n", sockfd);
+#ifdef _WIN32
+    if (sockfd == INVALID_SOCKET) {
+        printf("Socket creation failed!\n");
+        WSACleanup();
+        return 0;
+    }
+#else
+    if (sockfd < 0) {
+        printf("Socket creation failed!\n");
+        return 0;
+    }
+#endif
 
-    if (bind(sockfd, (struct sockaddr *)&addr_con, sizeof(addr_con)) == 0)
-        printf("\nSuccessfully binded!\n");
-    else
-        printf("\nBinding Failed!\n");
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(PORT_NO);
+    server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+
+    printf("Enter file name to request: ");
+    scanf("%s", net_buf);
+
+    sendto(sockfd, net_buf, NET_BUF_SIZE, sendrecvflag,
+           (struct sockaddr *)&server_addr, addrlen);
+
+    printf("Receiving file...\n");
+
+    fp = fopen("received.txt", "w");
 
     while (1) {
-        printf("\nWaiting for file name...\n");
-
         clearBuf(net_buf);
 
         nBytes = recvfrom(sockfd, net_buf, NET_BUF_SIZE, sendrecvflag,
-                          (struct sockaddr *)&addr_con, &addrlen);
+                          (struct sockaddr *)&server_addr, &addrlen);
 
-        printf("\nFile Name Received: %s\n", net_buf);
+        for (int i = 0; i < NET_BUF_SIZE; i++)
+            net_buf[i] = Cipher(net_buf[i]);
 
-        fp = fopen(net_buf, "r");
+        if (net_buf[0] == EOF)
+            break;
 
-        if (fp == NULL)
-            printf("\nFile open failed!\n");
-        else
-            printf("\nFile Successfully opened!\n");
-
-        while (1) {
-            if (sendFile(fp, net_buf, NET_BUF_SIZE)) {
-                sendto(sockfd, net_buf, NET_BUF_SIZE, sendrecvflag,
-                       (struct sockaddr *)&addr_con, addrlen);
-                break;
-            }
-
-            sendto(sockfd, net_buf, NET_BUF_SIZE, sendrecvflag,
-                   (struct sockaddr *)&addr_con, addrlen);
-
-            clearBuf(net_buf);
-        }
-
-        if (fp != NULL)
-            fclose(fp);
+        fprintf(fp, "%s", net_buf);
     }
 
+    printf("File received successfully.\n");
+
+    fclose(fp);
+    CLOSESOCKET(sockfd);
+
+#ifdef _WIN32
+    WSACleanup();
+#endif
     return 0;
 }

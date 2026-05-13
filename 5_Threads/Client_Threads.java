@@ -43,3 +43,17 @@ public class Client_Threads {
         }
     }
 }
+
+/*
+ * Steps to run:
+ * 1) javac Server_Threads.java Client_Threads.java
+ * 2) java Server_Threads (keep this running), then run: java Client_Threads
+ * 
+ * Input examples:
+ * 1) Enter number 4 -> output "Square from server: 16"
+ * 2) Enter number 9 -> output "Square from server: 81"
+ * 
+ * Expected output:
+ * 1) Square from server: 16
+ * 2) Square from server: 81
+ */

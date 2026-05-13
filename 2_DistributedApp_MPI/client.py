@@ -30,3 +30,15 @@ while True:
 
     else:
         print("Invalid choice")
+
+# Steps to run:
+# 1) python server.py
+# 2) python client.py
+#
+# Input examples:
+# 1) Choice 1 -> "hello", then Choice 2 -> output "olleh"
+# 2) Choice 1 -> "distributed", then Choice 2 -> output "detubirtsid"
+#
+# Expected output:
+# 1) Reversed String = olleh
+# 2) Reversed String = detubirtsid

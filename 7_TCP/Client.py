@@ -40,3 +40,15 @@ class ChatClient:
 if __name__ == "__main__":
     chat_client = ChatClient()
     chat_client.start()
+
+# Steps to run:
+# 1) python Server.py
+# 2) python Client.py (run in two terminals for two clients)
+#
+# Input examples:
+# 1) Client A sends: hello
+# 2) Client B sends: hi there
+#
+# Expected output:
+# 1) Client B sees: hello
+# 2) Client A sees: hi there

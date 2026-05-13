@@ -2,10 +2,6 @@ import java.rmi.*;
 import java.rmi.server.*;
 import java.sql.ResultSet;
 
-interface DBInterface extends Remote {
-    public String input(String name1, String name2) throws RemoteException;
-}
-
 public class Server extends UnicastRemoteObject implements DBInterface {
     int flag = 0, n, i, j;
     String name3;
@@ -37,3 +33,17 @@ public class Server extends UnicastRemoteObject implements DBInterface {
         return name3;
     }
 }
+
+/*
+ * Steps to run:
+ * 1) javac DBInterface.java Server.java Client.java
+ * 2) java Server (keep this running), then in another terminal run: java Client
+ * 
+ * Input examples (from client):
+ * 1) "Hello" and "World"
+ * 2) "Good" and "Morning"
+ * 
+ * Expected output:
+ * 1) Client receives "HelloWorld"
+ * 2) Client receives "GoodMorning"
+ */

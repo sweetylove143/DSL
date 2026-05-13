@@ -64,3 +64,15 @@ if __name__ == "__main__":
     chat_server = ChatServer()
     chat_server.start()
 
+# Steps to run:
+# 1) python Server.py
+# 2) python Client.py (run in two terminals for two clients)
+#
+# Input examples (from clients):
+# 1) Client A sends: hello
+# 2) Client B sends: hi there
+#
+# Expected output (server console):
+# 1) Message from ('127.0.0.1', <port>): hello
+# 2) Message from ('127.0.0.1', <port>): hi there
+

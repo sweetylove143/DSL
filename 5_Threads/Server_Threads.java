@@ -113,3 +113,18 @@ class ClientHandler implements Runnable {
         }
     }
 }
+
+/*
+ * Steps to run:
+ * 1) javac Server_Threads.java Client_Threads.java
+ * 2) java Server_Threads, then connect one or more clients using: java
+ * Client_Threads
+ * 
+ * Input examples (from client):
+ * 1) 4
+ * 2) 9
+ * 
+ * Expected output (client side):
+ * 1) Square from server: 16
+ * 2) Square from server: 81
+ */

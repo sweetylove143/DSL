@@ -1,0 +1,80 @@
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <unistd.h>
+
+#define PORT_NO 15050
+#define NET_BUF_SIZE 32
+#define cipherKey 'S'
+#define sendrecvflag 0
+
+void clearBuf(char *b) {
+    for (int i = 0; i < NET_BUF_SIZE; i++)
+        b[i] = '\0';
+}
+
+char Cipher(char ch) {
+    return ch ^ cipherKey;
+}
+
+int main() {
+    int sockfd, nBytes;
+    struct sockaddr_in server_addr;
+    int addrlen = sizeof(server_addr);
+
+    char net_buf[NET_BUF_SIZE];
+    FILE *fp;
+
+    // Create socket
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+
+    if (sockfd < 0) {
+        printf("Socket creation failed!\n");
+        return 0;
+    }
+
+    // Server configuration
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(PORT_NO);
+    server_addr.sin_addr.s_addr = INADDR_ANY;
+
+    // Take file name input
+    printf("Enter file name to request: ");
+    scanf("%s", net_buf);
+
+    // Send file request to server
+    sendto(sockfd, net_buf, NET_BUF_SIZE, sendrecvflag,
+           (struct sockaddr *)&server_addr, addrlen);
+
+    printf("Receiving file...\n");
+
+    // Open output file
+    fp = fopen("received.txt", "w");
+
+    while (1) {
+        clearBuf(net_buf);
+
+        nBytes = recvfrom(sockfd, net_buf, NET_BUF_SIZE, sendrecvflag,
+                          (struct sockaddr *)&server_addr, &addrlen);
+
+        // Decrypt data
+        for (int i = 0; i < NET_BUF_SIZE; i++)
+            net_buf[i] = Cipher(net_buf[i]);
+
+        // Stop condition
+        if (net_buf[0] == EOF)
+            break;
+
+        fprintf(fp, "%s", net_buf);
+    }
+
+    printf("File received successfully.\n");
+
+    fclose(fp);
+    close(sockfd);
+
+    return 0;
+}

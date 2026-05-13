@@ -28,3 +28,15 @@ server.register_function(reverse_str, "input")
 
 # Keep server running
 server.serve_forever()
+
+# Steps to run:
+# 1) python server.py
+# 2) python client.py
+#
+# Input examples (from client):
+# 1) "hello"
+# 2) "distributed"
+#
+# Expected output (client side):
+# 1) Reversed String = olleh
+# 2) Reversed String = detubirtsid

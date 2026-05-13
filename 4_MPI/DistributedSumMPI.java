@@ -53,8 +53,9 @@ public class DistributedSumMPI {
 
 /*
  * Steps to run (MPJ Express example) run in powershell :
- * You need to download MPJ from : https://sourceforge.net/projects/mpjexpress/
- * Download and extract it to any folder, My : D:soft/
+ * Already MPJ .zip is in the repo folder 4_MPI , just extract it to any
+ * folder,
+ * My : D:soft/
  * 1) $env:MPJ_HOME="D:\soft\mpj-v0_44"
  * 2) javac -cp ".;D:\soft\mpj-v0_44\lib\mpj.jar" DistributedSumMPI.java
  * 3) D:\soft\mpj-v0_44\bin\mpjrun.bat -np 2 DistributedSumMPI
